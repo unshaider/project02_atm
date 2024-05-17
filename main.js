@@ -1,16 +1,22 @@
 #! /usr/bin/env node
 import inquirer from "inquirer";
 import chalk from "chalk";
-let pinCode = 1214;
+let pinCode = 1234;
 let balance = 10000;
+console.log(chalk.blue("Welcome to the ATM!"));
 let pin = await inquirer.prompt([
     {
-        type: "number",
+        type: "password",
         name: "enterPin",
-        message: "Enter your PIN",
+        message: "Please enter your PIN:",
+        mask: "*",
     },
 ]);
-if (pin.enterPin === pinCode) {
+if (pin.enterPin != pinCode) {
+    console.log(chalk.red('Invalid PIN. Exiting...'));
+}
+else if (pin.enterPin == pinCode) {
+    console.log(chalk.green("PIN accepted."));
     let cash = await inquirer.prompt([
         {
             type: "list",
@@ -22,38 +28,36 @@ if (pin.enterPin === pinCode) {
             type: "list",
             name: "selectOption",
             message: "Select Service",
-            choices: ["Fast Cash", "Cash Withdrawl", "Balance Inquiry"],
+            choices: ["Check Balance", "Withdraw Money", "Deposit Money", "Exit"],
         },
     ]);
-    if (cash.selectOption === "Fast Cash") {
-        let fastCash = await inquirer.prompt([
-            {
-                type: "list",
-                name: "selectOption",
-                message: "Select Cash",
-                choices: [500, 1000, 5000, 10000],
-            },
-        ]);
-        console.log(`Your remaining balance is $${balance - fastCash.selectOption}.`);
+    if (cash.selectOption === "Check Balance") {
+        console.log(chalk.blue(`Your current balance is: $${balance}`));
     }
-    else if (cash.selectOption === "Cash Withdrawl") {
+    else if (cash.selectOption === "Withdraw Money") {
         let cashWithdrawl = await inquirer.prompt({
             type: "number",
             name: "withdraw",
-            message: "Enter a cash amount",
+            message: "Enter the amount to withdraw:",
         });
         let cashBalance = balance - cashWithdrawl.withdraw;
         if (cashWithdrawl.withdraw > balance) {
-            console.log(chalk.red("Insufficient Balance"));
+            console.log(chalk.red("Your current balance is insufficient for this transaction."));
         }
         else {
             console.log(chalk.green(`Your remaining balance is $${cashBalance}.`));
         }
     }
-    else if (cash.selectOption === "Balance Inquiry") {
-        console.log(chalk.green(`Your current balance is $${balance}.`));
+    else if (cash.selectOption === "Deposit Money") {
+        let amount = await inquirer.prompt([
+            {
+                type: "number",
+                name: "depositAmount",
+                message: "Enter the amount to deposit:",
+            },
+        ]);
+        const depositAmount = parseInt(amount.depositAmount);
+        balance += depositAmount;
+        console.log(chalk.green(`Successfully deposited $${balance}.`));
     }
-}
-else {
-    console.log(chalk.red("You have entered the incorrect PIN."));
 }
